@@ -73,6 +73,10 @@ public:
   // Collect data and until it is \n terminated
   void parseBuffer(const char *aBuffer);
 
+  // Write a string through the connection
+  long write(const char* buf, long num) {return mConnection->write(buf, num);} ;
+
+
 protected:
   void startHeartbeats(const std::string &buf);
   void close();

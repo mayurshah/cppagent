@@ -121,33 +121,44 @@ inline static void trim(std::string str)
 
 void Adapter::protocolCommand(const std::string& data)
 {
-  // Handle initial push of settings for uuid, serial number and manufacturer. 
-  // This will override the settings in the device from the xml
-  size_t index = data.find(':', 2);
-  if (index != string::npos)
+  Device *device = mAgent->getDeviceByName(mDevice);
+  if (device != NULL)
   {
-    Device *device = mAgent->getDeviceByName(mDevice);
-    if (device != NULL)
+    if (data.compare(0, 7, "* PROBE") == 0)
     {
-      // Slice from the second character to the :, without the colon
-      string key = data.substr(2, index - 2);
-      trim(key);        
-      string value = data.substr(index + 1);
-      trim(value);
-      
-      if (key == "uuid")
-        device->setUuid(value);
-      else if (key == "manufacturer")
-        device->setManufacturer(value);
-      else if (key == "station")
-        device->setStation(value);
-      else if (key == "serialNumber")
-        device->setSerialNumber(value);
-      else
-        logEvent("Agent", "Unknown command '" + data + "' for device '" + mDevice);
+      string probe = mAgent->handleProbe(mDevice);
+      long status = mConnection->write(probe.c_str(), probe.length());
+      if (status < 0)
+      {
+        logEvent("Adapter::protocolCommand", "Could not write probe  " + intToString(status));
+      }
+    }
+    else 
+    {
+      // Handle initial push of settings for uuid, serial number and manufacturer. 
+      // This will override the settings in the device from the xml
+      size_t index = data.find(':', 2);
+      if (index != string::npos)
+      {
+        // Slice from the second character to the :, without the colon
+        string key = data.substr(2, index - 2);
+        trim(key);        
+        string value = data.substr(index + 1);
+        trim(value);
+        
+        if (key == "uuid")
+          device->setUuid(value);
+        else if (key == "manufacturer")
+          device->setManufacturer(value);
+        else if (key == "station")
+          device->setStation(value);
+        else if (key == "serialNumber")
+          device->setSerialNumber(value);
+        else
+          logEvent("Agent", "Unknown command '" + data + "' for device '" + mDevice);
+      }
     }
   }
-  
 }
 
 void Adapter::disconnected()

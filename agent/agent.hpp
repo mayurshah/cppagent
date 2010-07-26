@@ -134,6 +134,9 @@ public:
   // For testing...
   void setSequence(Int64 aSeq) { mSequence = aSeq; }
   
+  /* Handle probe calls */
+  std::string handleProbe(const std::string& device);
+  
 protected:
   /* HTTP methods to handle the 3 basic calls */
   std::string handleCall(
@@ -143,9 +146,6 @@ protected:
     const std::string& call,
     const std::string& device = ""
   );
-  
-  /* Handle probe calls */
-  std::string handleProbe(const std::string& device);
   
   /* Handle stream calls, which includes both current and sample */
   std::string handleStream(
